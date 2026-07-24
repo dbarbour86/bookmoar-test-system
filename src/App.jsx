@@ -23,7 +23,7 @@ export function App() {
   };
 
   return (
-    <div className="w-full h-full min-h-screen bg-[#070b14] relative flex flex-col">
+    <div className="w-screen h-screen overflow-hidden bg-[#070b14] relative flex flex-col">
       {/* Top Floating App Route Switcher Banner */}
       <div className="bg-slate-950 border-b border-slate-800/80 px-4 py-1.5 flex items-center justify-between z-40 text-xs select-none">
         <div className="flex items-center space-x-2">

@@ -10,7 +10,7 @@ export function TenantDashboard({ onNavigateRoute }) {
   const activeView = useTenantStore((state) => state.activeView);
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#070b14] text-slate-100 font-sans">
+    <div className="flex flex-col h-full w-full overflow-hidden bg-[#070b14] text-slate-100 font-sans">
       {/* Client Header Bar */}
       <TenantHeader onNavigateRoute={onNavigateRoute} />
 
