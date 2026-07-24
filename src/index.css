@@ -1,0 +1,124 @@
+@import '@xyflow/react/dist/style.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #070709;
+    color: #f8fafc;
+  }
+}
+
+/* Open Design Glassmorphism & Elevated Surface Utilities */
+.open-design-glass {
+  background: rgba(11, 11, 13, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 37, 56, 0.15);
+}
+
+.open-design-card {
+  background: rgba(16, 16, 20, 0.9);
+  border: 1px solid rgba(51, 65, 85, 0.4);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.open-design-card:hover {
+  border-color: rgba(255, 37, 56, 0.6);
+  box-shadow: 0 15px 30px -5px rgba(255, 37, 56, 0.15);
+  transform: translateY(-1px);
+}
+
+/* React Flow custom dark aesthetic overrides */
+.react-flow {
+  background-color: #070709 !important;
+}
+
+.react-flow__background {
+  background-color: #070709 !important;
+}
+
+.react-flow__controls {
+  background: rgba(11, 11, 13, 0.85) !important;
+  border: 1px solid rgba(255, 37, 56, 0.2) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+.react-flow__controls-button {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.4) !important;
+  color: #94a3b8 !important;
+}
+
+.react-flow__controls-button:hover {
+  background: rgba(30, 41, 59, 0.8) !important;
+  color: #FF2538 !important;
+}
+
+.react-flow__controls-button svg {
+  fill: currentColor !important;
+}
+
+/* Book Moar Vibrant Red Connecting Edges */
+.react-flow__edge-path {
+  stroke: #FF2538 !important;
+  stroke-width: 2.5px !important;
+  filter: drop-shadow(0 0 6px rgba(255, 37, 56, 0.4));
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #FF2538 !important;
+  stroke-width: 3px !important;
+  filter: drop-shadow(0 0 8px rgba(255, 37, 56, 0.8));
+}
+
+.react-flow__handle {
+  width: 12px !important;
+  height: 12px !important;
+  border-radius: 9999px !important;
+  border: 2px solid #070709 !important;
+  transition: all 0.2s ease;
+}
+
+.react-flow__handle-top, .react-flow__handle-bottom {
+  background: #FF2538 !important;
+  box-shadow: 0 0 8px rgba(255, 37, 56, 0.8);
+}
+
+.react-flow__handle-left, .react-flow__handle-right {
+  background: #FF2538 !important;
+  box-shadow: 0 0 8px rgba(255, 37, 56, 0.8);
+}
+
+.react-flow__handle:hover {
+  transform: scale(1.3);
+  box-shadow: 0 0 14px rgba(255, 37, 56, 1);
+}
+
+.nodrag {
+  cursor: auto !important;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #070709;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
