@@ -261,7 +261,8 @@ export function OverviewDashboard() {
             {Array.from({ length: daysInMonth }).map((_, idx) => {
               const dayNum = idx + 1;
               const dayBookings = getBookingsForDay(dayNum);
-              const isToday = dayNum === 19;
+              const today = new Date();
+              const isToday = dayNum === today.getDate() && currentMonth.getMonth() === today.getMonth() && currentMonth.getFullYear() === today.getFullYear();
 
               return (
                 <div
