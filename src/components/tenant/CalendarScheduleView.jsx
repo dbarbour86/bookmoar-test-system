@@ -5,9 +5,18 @@ import { useTenantStore } from '../../store/useTenantStore';
 export function CalendarScheduleView() {
   const contacts = useTenantStore((state) => state.contacts);
   const activeTenantId = useTenantStore((state) => state.activeTenantId);
+  const addBookingToContact = useTenantStore((state) => state.addBookingToContact);
 
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 6, 1)); // July 2026 default
   const [selectedBookingEvent, setSelectedBookingEvent] = useState(null);
+
+  // Click-to-book states
+  const [bookingDate, setBookingDate] = useState(null);
+  const [bookingFormOpen, setBookingFormOpen] = useState(false);
+  const [selectedContactIdForBooking, setSelectedContactIdForBooking] = useState('');
+  const [bookingServiceType, setBookingServiceType] = useState('');
+  const [bookingTime, setBookingTime] = useState('10:00 AM');
+  const [bookingPrice, setBookingPrice] = useState('350');
 
   const tenantContacts = contacts.filter((c) => c.tenant_id === activeTenantId);
 
@@ -30,6 +39,45 @@ export function CalendarScheduleView() {
     });
   };
 
+  // Open booking drawer for clicked date
+  const handleDateClick = (dayNum) => {
+    const month = String(currentMonth.getMonth() + 1).padStart(2, '0');
+    const day = String(dayNum).padStart(2, '0');
+    const dateStr = `2026-${month}-${day}`;
+    
+    setBookingDate(dateStr);
+    setSelectedBookingEvent(null); // Close inspect drawer if open
+    
+    if (tenantContacts.length > 0 && !selectedContactIdForBooking) {
+      setSelectedContactIdForBooking(tenantContacts[0].id);
+    }
+    
+    setBookingFormOpen(true);
+  };
+
+  // Handle Form Submission
+  const handleConfirmBooking = (e) => {
+    e.preventDefault();
+    if (!selectedContactIdForBooking || !bookingDate || !bookingServiceType) return;
+
+    const bookingId = `b-${Date.now().toString().slice(-4)}`;
+    const appointmentDateStr = `${bookingDate}T${bookingTime === '10:00 AM' ? '10:00:00' : '14:30:00'}Z`;
+
+    const bookingData = {
+      id: bookingId,
+      service_type: bookingServiceType,
+      appointment_date: appointmentDateStr,
+      price: parseFloat(bookingPrice) || 350.00,
+      status: 'scheduled'
+    };
+
+    addBookingToContact(selectedContactIdForBooking, bookingData);
+
+    setBookingFormOpen(false);
+    setBookingServiceType('');
+    setBookingPrice('350');
+  };
+
   return (
     <div className="flex-1 flex h-full overflow-hidden bg-[#070709] font-sans relative">
       
@@ -44,7 +92,7 @@ export function CalendarScheduleView() {
             </div>
             <div>
               <h2 className="text-base font-bold text-white uppercase tracking-wider">{monthYearHeader}</h2>
-              <p className="text-xs text-slate-400">Tenant Schedule & Automated Reminder Queue</p>
+              <p className="text-xs text-slate-400">Click any date cell to schedule a new customer booking</p>
             </div>
           </div>
 
@@ -96,7 +144,8 @@ export function CalendarScheduleView() {
             return (
               <div
                 key={dayNum}
-                className={`min-h-[100px] p-2.5 rounded-2xl border transition-all flex flex-col justify-between select-none ${
+                onClick={() => handleDateClick(dayNum)}
+                className={`min-h-[100px] p-2.5 rounded-2xl border transition-all flex flex-col justify-between cursor-pointer select-none ${
                   isToday
                     ? 'border-[#FF2538] bg-[#FF2538]/5 ring-1 ring-[#FF2538]/20 shadow-lg shadow-[#FF2538]/10'
                     : 'border-[#252528] bg-[#101014]/40 hover:border-slate-700'
@@ -121,7 +170,10 @@ export function CalendarScheduleView() {
                   {dayBookings.map((b) => (
                     <div
                       key={b.id}
-                      onClick={() => setSelectedBookingEvent(b)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedBookingEvent(b);
+                      }}
                       className="p-1.5 rounded-lg bg-[#FF2538]/10 border border-[#FF2538]/20 text-red-300 hover:bg-[#FF2538]/25 cursor-pointer transition-all shadow-md group"
                     >
                       <div className="flex items-center justify-between text-[10px] font-bold">
@@ -140,9 +192,102 @@ export function CalendarScheduleView() {
         </div>
       </div>
 
+      {/* Side Drawer Create Appointment Booking Form */}
+      {bookingFormOpen && (
+        <div className="w-96 bg-[#0b0b0d] border-l border-[#252528] h-full flex flex-col z-30 shadow-2xl animate-in slide-in-from-right duration-200 p-6 space-y-5 select-none">
+          <div className="flex items-center justify-between border-b border-[#252528] pb-3">
+            <div className="flex items-center space-x-2 text-xs font-bold text-[#FF2538]">
+              <CalendarIcon className="w-4 h-4" />
+              <span>Schedule New Appointment</span>
+            </div>
+            <button
+              onClick={() => setBookingFormOpen(false)}
+              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <form onSubmit={handleConfirmBooking} className="space-y-4 text-xs">
+            {/* Prefilled Date */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Selected Date</label>
+              <div className="p-3 bg-slate-900 border border-[#252528] rounded-xl text-white font-mono font-bold">
+                {new Date(bookingDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </div>
+            </div>
+
+            {/* Select Customer Dropdown */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Select Customer / Prospect</label>
+              <select
+                value={selectedContactIdForBooking}
+                onChange={(e) => setSelectedContactIdForBooking(e.target.value)}
+                className="w-full bg-[#101014] border border-[#252528] text-white rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#FF2538]"
+              >
+                {tenantContacts.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.first_name} {c.last_name} ({c.phone})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Service Type Input */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Service Type / Job Description</label>
+              <input
+                type="text"
+                required
+                value={bookingServiceType}
+                onChange={(e) => setBookingServiceType(e.target.value)}
+                placeholder="e.g. Tankless Water Heater Install"
+                className="w-full bg-[#101014] border border-[#252528] text-white rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#FF2538]"
+              />
+            </div>
+
+            {/* Time Slot Picker */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Select Preferred Time Slot</label>
+              <select
+                value={bookingTime}
+                onChange={(e) => setBookingTime(e.target.value)}
+                className="w-full bg-[#101014] border border-[#252528] text-white rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#FF2538]"
+              >
+                <option value="10:00 AM">10:00 AM - Morning Slot</option>
+                <option value="02:30 PM">02:30 PM - Afternoon Slot</option>
+              </select>
+            </div>
+
+            {/* Price Selector */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Estimated Deal Value ($)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
+                <input
+                  type="number"
+                  required
+                  value={bookingPrice}
+                  onChange={(e) => setBookingPrice(e.target.value)}
+                  className="w-full bg-[#101014] border border-[#252528] text-white rounded-xl pl-7 pr-3 py-2.5 focus:outline-none focus:border-[#FF2538] font-mono"
+                />
+              </div>
+            </div>
+
+            {/* Submit Actions */}
+            <button
+              type="submit"
+              className="w-full py-3 rounded-xl bg-[#FF2538] hover:bg-red-600 text-white font-bold text-xs uppercase tracking-wider transition-all active:scale-95 shadow-lg shadow-[#FF2538]/10"
+            >
+              Confirm Booking
+            </button>
+          </form>
+        </div>
+      )}
+
       {/* Side Drawer Inspector Modal */}
       {selectedBookingEvent && (
-        <div className="w-96 bg-[#0b0b0d] border-l border-[#252528] h-full flex flex-col z-30 shadow-2xl animate-in slide-in-from-right duration-200 p-6 space-y-5 select-none">
+        <div className="w-96 bg-[#0b0b0d] border-l border-[#252528] h-full flex flex-col z-35 shadow-2xl animate-in slide-in-from-right duration-200 p-6 space-y-5 select-none">
           
           <div className="flex items-center justify-between border-b border-[#252528] pb-3">
             <div className="flex items-center space-x-2 text-xs font-bold text-[#FF2538]">

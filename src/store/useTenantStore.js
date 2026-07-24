@@ -110,6 +110,29 @@ export const useTenantStore = create((set, get) => ({
     setTimeout(() => set({ notificationToast: null }), 3500);
   },
 
+  // Add booking to a contact and set status to booked
+  addBookingToContact: (contactId, bookingData) => {
+    const updatedContacts = get().contacts.map((c) => {
+      if (c.id === contactId) {
+        return {
+          ...c,
+          status: 'booked',
+          bookings: [...(c.bookings || []), bookingData]
+        };
+      }
+      return c;
+    });
+
+    const contactName = get().contacts.find(c => c.id === contactId)?.first_name || 'Customer';
+
+    set({
+      contacts: updatedContacts,
+      notificationToast: `Scheduled booking for ${contactName}! Twilio Redis reminder queue loaded.`
+    });
+
+    setTimeout(() => set({ notificationToast: null }), 4000);
+  },
+
   setPipelineDisplayMode: (mode) => set({ pipelineDisplayMode: mode }),
   setActiveTenantId: (tenantId) => {
     const tenantContacts = get().contacts.filter(c => c.tenant_id === tenantId);
